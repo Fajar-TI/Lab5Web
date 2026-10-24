@@ -1,4 +1,4 @@
-<img width="1365" height="767" alt="Screenshot 2026-10-24 214039" src="https://github.com/user-attachments/assets/97ecf930-e638-4bcf-a0c1-91070365d075" /># Lab5Web
+
 Tugas Post Test Praktikum 5
 
 # Lab5Web — Praktikum 5: JavaScript Dasar dan Manipulasi HTML
