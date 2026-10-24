@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Daftar Menu Makanan</title>
+</head>
+<body>
+  <button id="tombolToggle">Sembunyikan Menu</button>
+
+  <div id="areaMenu">
+    <h3>Daftar Menu Makanan</h3>
+    <label><input type="checkbox" class="menu" value="5000"> Ayam Goreng — Rp5.000</label><br>
+    <label><input type="checkbox" class="menu" value="500"> Tempe — Rp500</label><br>
+    <label><input type="checkbox" class="menu" value="2500"> Telur Dadar — Rp2.500</label><br>
+    <label><input type="checkbox" class="menu" value="3000"> Nasi Putih — Rp3.000</label><br>
+    <label><input type="checkbox" class="menu" value="2000"> Es Teh Manis — Rp2.000</label><br>
+    <label><input type="checkbox" class="menu" value="10000"> Sate Ayam — Rp10.000</label><br>
+  </div>
+
+  <p>Total: Rp<span id="total">0</span></p>
+
+  <script>
+    const tombolToggle = document.getElementById("tombolToggle");
+    const areaMenu = document.getElementById("areaMenu");
+
+    tombolToggle.addEventListener("click", () => {
+      areaMenu.hidden = !areaMenu.hidden;
+      tombolToggle.textContent = areaMenu.hidden
+        ? "Tampilkan Menu"
+        : "Sembunyikan Menu";
+    });
+
+    const daftarMenu = document.querySelectorAll(".menu");
+    daftarMenu.forEach((item) => {
+      item.addEventListener("change", hitungTotal);
+    });
+
+    function hitungTotal() {
+      let total = 0;
+      daftarMenu.forEach((item) => {
+        if (item.checked) total += Number(item.value);
+      });
+      document.getElementById("total").textContent = total.toLocaleString("id-ID");
+    }
+  </script>
+</body>
+</html>

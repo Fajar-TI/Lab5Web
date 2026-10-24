@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kalkulator Nilai Mahasiswa</title>
+<style>
+  :root {
+    --ink: #1b2a41;
+    --muted: #5d6b7e;
+    --paper: #f5f7fa;
+    --card: #ffffff;
+    --line: #d5dce5;
+    --accent: #1f5c99;
+    --ok: #1d7a46;
+    --ok-bg: #e4f4ea;
+    --bad: #b3261e;
+    --bad-bg: #fbe8e6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  main { max-width: 760px; margin: 0 auto; padding: 32px 20px 56px; }
+  h1 { font-size: 1.7rem; margin: 0 0 4px; color: var(--accent); }
+  .sub { margin: 0 0 24px; color: var(--muted); }
+  section {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  h2 { font-size: 1.05rem; margin: 0 0 14px; }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  label { display: block; font-weight: 600; font-size: .92rem; margin-bottom: 4px; }
+  label small { font-weight: 400; color: var(--muted); }
+  input {
+    width: 100%; padding: 9px 10px; font: inherit;
+    border: 1px solid var(--line); border-radius: 6px; background: #fff; color: var(--ink);
+  }
+  input:focus-visible, button:focus-visible { outline: 3px solid #9cc2e8; outline-offset: 1px; }
+  input.invalid { border-color: var(--bad); background: var(--bad-bg); }
+  .err { color: var(--bad); font-size: .82rem; min-height: 1.2em; margin-top: 3px; }
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
+  button {
+    font: inherit; font-weight: 600; padding: 9px 18px; border-radius: 6px;
+    border: 1px solid var(--accent); cursor: pointer;
+  }
+  .primary { background: var(--accent); color: #fff; }
+  .ghost { background: #fff; color: var(--accent); }
+  #hasil[hidden] { display: none; }
+  .hasil-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; text-align: center; }
+  .hasil-grid div { border: 1px solid var(--line); border-radius: 8px; padding: 14px 8px; }
+  .hasil-grid span { display: block; color: var(--muted); font-size: .85rem; }
+  .hasil-grid strong { display: block; font-size: 2rem; line-height: 1.2; }
+  #statusBox.lulus { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+  #statusBox.gagal { background: var(--bad-bg); border-color: var(--bad); color: var(--bad); }
+  #statusBox strong { font-size: 1.3rem; padding-top: 6px; }
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  th, td { padding: 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  th { background: var(--paper); }
+  td.pass { color: var(--ok); font-weight: 600; }
+  td.fail { color: var(--bad); font-weight: 600; }
+  .scroll { overflow-x: auto; }
+  .note { color: var(--muted); font-size: .85rem; margin: 10px 0 0; }
+  @media (max-width: 560px) {
+    .grid, .hasil-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>Kalkulator Nilai Mahasiswa</h1>
+  <p class="sub">Masukkan nilai tugas, UTS, dan UAS (0–100) untuk melihat nilai akhir, predikat, dan status kelulusan.</p>
+
+  <section aria-labelledby="judulForm">
+    <h2 id="judulForm">Input nilai</h2>
+    <form id="formNilai" novalidate>
+      <div class="grid">
+        <div>
+          <label for="tugas">Tugas <small>(30%)</small></label>
+          <input type="number" id="tugas" min="0" max="100" step="any" inputmode="decimal" aria-describedby="errTugas">
+          <div class="err" id="errTugas" role="alert"></div>
+        </div>
+        <div>
+          <label for="uts">UTS <small>(30%)</small></label>
+          <input type="number" id="uts" min="0" max="100" step="any" inputmode="decimal" aria-describedby="errUts">
+          <div class="err" id="errUts" role="alert"></div>
+        </div>
+        <div>
+          <label for="uas">UAS <small>(40%)</small></label>
+          <input type="number" id="uas" min="0" max="100" step="any" inputmode="decimal" aria-describedby="errUas">
+          <div class="err" id="errUas" role="alert"></div>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary">Hitung nilai</button>
+        <button type="reset" class="ghost" id="btnReset">Reset</button>
+      </div>
+    </form>
+  </section>
+
+  <section id="hasil" aria-live="polite" hidden>
+    <h2>Hasil</h2>
+    <div class="hasil-grid">
+      <div><span>Nilai akhir</span><strong id="outAkhir">–</strong></div>
+      <div><span>Predikat</span><strong id="outPredikat">–</strong></div>
+      <div id="statusBox"><span>Status</span><strong id="outStatus">–</strong></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="judulUji">
+    <h2 id="judulUji">Pengujian tiga skenario</h2>
+    <p class="note" style="margin-top:0;margin-bottom:12px">Klik “Coba” untuk mengisi form dengan skenario tersebut. Kolom Hasil diperiksa otomatis terhadap nilai yang diharapkan.</p>
+    <div class="scroll">
+      <table>
+        <thead>
+          <tr><th>Skenario</th><th>Tugas / UTS / UAS</th><th>Diharapkan</th><th>Hasil program</th><th></th></tr>
+        </thead>
+        <tbody id="tabelUji"></tbody>
+      </table>
+    </div>
+  </section>
+</main>
+
+<script>
+/* ============ LOGIKA (tanpa akses DOM) ============ */
+
+// Menghitung nilai akhir: tugas 30%, UTS 30%, UAS 40%.
+// Dibulatkan 2 desimal agar batas seperti 60 tidak meleset akibat floating point.
+function hitungNilaiAkhir(tugas, uts, uas) {
+  const hasil = tugas * 0.30 + uts * 0.30 + uas * 0.40;
+  return Math.round(hasil * 100) / 100;
+}
+
+function tentukanPredikat(nilai) {
+  if (nilai >= 85) return "A";
+  if (nilai >= 75) return "B";
+  if (nilai >= 60) return "C";
+  if (nilai >= 50) return "D";
+  return "E";
+}
+
+function tentukanStatus(nilai) {
+  return nilai >= 60 ? "Lulus" : "Belum lulus";
+}
+
+// Mengembalikan pesan error, atau "" jika nilai valid.
+function validasiNilai(teks) {
+  if (teks.trim() === "") return "Wajib diisi.";
+  const angka = Number(teks);
+  if (Number.isNaN(angka)) return "Harus berupa angka.";
+  if (angka < 0 || angka > 100) return "Harus di antara 0 dan 100.";
+  return "";
+}
+
+/* ============ TAMPILAN (akses DOM) ============ */
+
+const form = document.getElementById("formNilai");
+const kolom = [
+  { input: document.getElementById("tugas"), err: document.getElementById("errTugas") },
+  { input: document.getElementById("uts"),   err: document.getElementById("errUts") },
+  { input: document.getElementById("uas"),   err: document.getElementById("errUas") }
+];
+const panelHasil = document.getElementById("hasil");
+
+function tampilkanError(k, pesan) {
+  k.err.textContent = pesan;
+  k.input.classList.toggle("invalid", pesan !== "");
+}
+
+function tampilkanHasil(akhir) {
+  document.getElementById("outAkhir").textContent = akhir.toFixed(2);
+  document.getElementById("outPredikat").textContent = tentukanPredikat(akhir);
+  const status = tentukanStatus(akhir);
+  document.getElementById("outStatus").textContent = status;
+  const box = document.getElementById("statusBox");
+  box.classList.toggle("lulus", status === "Lulus");
+  box.classList.toggle("gagal", status !== "Lulus");
+  panelHasil.hidden = false;
+}
+
+function prosesForm() {
+  let valid = true;
+  kolom.forEach(function (k) {
+    const pesan = validasiNilai(k.input.value);
+    tampilkanError(k, pesan);
+    if (pesan) valid = false;
+  });
+  if (!valid) {
+    panelHasil.hidden = true;
+    return;
+  }
+  const [tugas, uts, uas] = kolom.map(function (k) { return Number(k.input.value); });
+  tampilkanHasil(hitungNilaiAkhir(tugas, uts, uas));
+}
+
+form.addEventListener("submit", function (e) {
+  e.preventDefault();
+  prosesForm();
+});
+
+form.addEventListener("reset", function () {
+  kolom.forEach(function (k) { tampilkanError(k, ""); });
+  panelHasil.hidden = true;
+});
+
+/* ============ PENGUJIAN 3 SKENARIO ============ */
+
+const skenarioUji = [
+  { nama: "Nilai sedang (data dari soal)", nilai: [85, 78, 88], akhir: 84.1, predikat: "B", status: "Lulus" },
+  { nama: "Nilai tinggi",                  nilai: [95, 90, 98], akhir: 94.7, predikat: "A", status: "Lulus" },
+  { nama: "Nilai rendah",                  nilai: [70, 55, 45], akhir: 55.5, predikat: "D", status: "Belum lulus" }
+];
+
+const tbody = document.getElementById("tabelUji");
+skenarioUji.forEach(function (s) {
+  const akhir = hitungNilaiAkhir(s.nilai[0], s.nilai[1], s.nilai[2]);
+  const predikat = tentukanPredikat(akhir);
+  const status = tentukanStatus(akhir);
+  const cocok = akhir === s.akhir && predikat === s.predikat && status === s.status;
+
+  const tr = document.createElement("tr");
+  tr.innerHTML =
+    "<td>" + s.nama + "</td>" +
+    "<td>" + s.nilai.join(" / ") + "</td>" +
+    "<td>" + s.akhir.toFixed(2) + " · " + s.predikat + " · " + s.status + "</td>" +
+    "<td class='" + (cocok ? "pass" : "fail") + "'>" +
+      akhir.toFixed(2) + " · " + predikat + " · " + status + (cocok ? " ✓" : " ✗") + "</td>" +
+    "<td><button type='button' class='ghost'>Coba</button></td>";
+
+  tr.querySelector("button").addEventListener("click", function () {
+    kolom.forEach(function (k, i) { k.input.value = s.nilai[i]; });
+    prosesForm();
+  });
+  tbody.appendChild(tr);
+});
+
+// Log tambahan di Console (seperti kode asli soal)
+console.log("Nilai akhir:", hitungNilaiAkhir(85, 78, 88).toFixed(2));
+console.log("Predikat:", tentukanPredikat(hitungNilaiAkhir(85, 78, 88)));
+console.log("Status:", tentukanStatus(hitungNilaiAkhir(85, 78, 88)));
+</script>
+</body>
+</html>
